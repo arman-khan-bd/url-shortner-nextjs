@@ -12,6 +12,7 @@ export interface ShortenUrlState {
   shortUrl?: string;
   error?: string;
   longUrl?: string;
+  shortCode?: string;
 }
 
 const UrlSchema = z.string().url({ message: 'Please enter a valid URL.' });
@@ -21,7 +22,7 @@ export async function shortenUrl(
   formData: FormData
 ): Promise<ShortenUrlState> {
   const longUrl = formData.get('longUrl') as string;
-  const userId = formData.get('userId') as string | null;
+  const userId = formData.get('userId') as string;
 
   const validation = UrlSchema.safeParse(longUrl);
 
@@ -33,13 +34,16 @@ export async function shortenUrl(
     const id = await getNextId();
     const shortCode = toBase62(id);
     
-    await saveUrlMapping(validation.data, shortCode, userId);
+    await saveUrlMapping(validation.data, shortCode, userId || null);
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 9002}`;
-    revalidatePath('/dashboard/urls');
+    if (userId) {
+        revalidatePath('/dashboard/urls');
+    }
     return {
         shortUrl: `${baseUrl}/${shortCode}`,
-        longUrl: validation.data
+        longUrl: validation.data,
+        shortCode: shortCode
     };
   } catch (e: any) {
     console.error("Error shortening URL:", e);

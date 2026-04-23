@@ -23,9 +23,11 @@ service cloud.firestore {
       allow delete: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
 
-    // Counters should not be client-accessible at all.
+    // Allow clients to increment the counter.
     match /counters/{counterId} {
-      allow read, write: if false;
+      allow read: if true;
+      allow create: if request.resource.data.count == 10000 && counterId == 'url_counter';
+      allow update: if request.resource.data.count == resource.data.count + 1 && counterId == 'url_counter';
     }
   }
 }
