@@ -1,8 +1,12 @@
 'use server';
 
 import { z } from 'zod';
-import { getNextId, saveUrlMapping } from '@/lib/db';
+import { getNextId, saveUrlMapping, createUser as createUserInDb } from '@/lib/db';
 import { toBase62 } from '@/lib/shortener';
+import { auth } from '@/firebase/config';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 export interface ShortenUrlState {
   shortUrl?: string;
@@ -17,6 +21,7 @@ export async function shortenUrl(
   formData: FormData
 ): Promise<ShortenUrlState> {
   const longUrl = formData.get('longUrl') as string;
+  const userId = formData.get('userId') as string | null;
 
   const validation = UrlSchema.safeParse(longUrl);
 
@@ -28,10 +33,10 @@ export async function shortenUrl(
     const id = await getNextId();
     const shortCode = toBase62(id);
     
-    await saveUrlMapping(validation.data, shortCode);
+    await saveUrlMapping(validation.data, shortCode, userId);
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 9002}`;
-    
+    revalidatePath('/dashboard/urls');
     return {
         shortUrl: `${baseUrl}/${shortCode}`,
         longUrl: validation.data
@@ -40,4 +45,42 @@ export async function shortenUrl(
     console.error("Error shortening URL:", e);
     return { error: 'Failed to shorten URL. Please try again.' };
   }
+}
+
+
+export async function login(prevState: any, formData: FormData) {
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (error: any) {
+    if (error.code === 'auth/invalid-credential') {
+      return { message: 'Invalid email or password.' };
+    }
+    return { message: 'An unexpected error occurred. Please try again.' };
+  }
+  redirect('/dashboard');
+}
+
+export async function register(prevState: any, formData: FormData) {
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    if (user) {
+      await createUserInDb(user.uid, email);
+    }
+  } catch (error: any) {
+    if (error.code === 'auth/email-already-in-use') {
+      return { message: 'This email is already in use.' };
+    }
+     if (error.code === 'auth/weak-password') {
+      return { message: 'Password should be at least 6 characters.' };
+    }
+    return { message: 'An unexpected error occurred. Please try again.' };
+  }
+  redirect('/dashboard');
 }

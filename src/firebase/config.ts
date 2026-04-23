@@ -2,7 +2,7 @@ import { initializeApp, getApp, getApps, FirebaseOptions } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
-const firebaseConfig: FirebaseOptions = {
+export const firebaseConfig: FirebaseOptions = {
     // THIS IS A PLACEHOLDER.
     // Go to your Firebase project console, find "Project settings" > "General",
     // and under "Your apps", create a new Web app or select an existing one.

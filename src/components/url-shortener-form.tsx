@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Copy, Link as LinkIcon, Check } from 'lucide-react';
+import { useUser } from '@/firebase';
 
 const initialState: ShortenUrlState = {};
 
@@ -21,6 +22,7 @@ function SubmitButton() {
 }
 
 export function UrlShortenerForm() {
+  const { user } = useUser();
   const [state, formAction] = useActionState(shortenUrl, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [copied, setCopied] = useState(false);
@@ -62,6 +64,7 @@ export function UrlShortenerForm() {
             </div>
         </CardHeader>
         <form action={formAction} ref={formRef}>
+          <input type="hidden" name="userId" value={user?.uid || ''} />
           <CardContent>
             <div className="flex flex-col sm:flex-row items-center gap-2 relative">
               <Input
@@ -70,7 +73,7 @@ export function UrlShortenerForm() {
                 aria-label="URL to shorten"
                 placeholder="https://example.com/very/long/url/to/shorten"
                 required
-                className="pl-10 text-base"
+                className="pl-4 text-base"
               />
               <SubmitButton />
             </div>
@@ -98,7 +101,7 @@ export function UrlShortenerForm() {
                             {state.shortUrl}
                         </a>
                         <Button variant="ghost" size="icon" onClick={handleCopy}>
-                            {copied ? <Check className="h-5 w-5 text-accent" /> : <Copy className="h-5 w-5" />}
+                            {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
                             <span className="sr-only">Copy to clipboard</span>
                         </Button>
                     </div>

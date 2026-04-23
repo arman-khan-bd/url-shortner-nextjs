@@ -1,5 +1,26 @@
 {
   "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user account.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "description": "The role of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["email", "role", "createdAt"]
+    },
     "Url": {
       "title": "URL Mapping",
       "description": "Represents a shortened URL.",
@@ -18,6 +39,10 @@
         },
         "clicks": {
           "type": "number"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who created the link. Can be null for anonymous links."
         }
       },
       "required": ["longUrl", "shortCode", "createdAt", "clicks"]
@@ -35,12 +60,16 @@
     }
   },
   "auth": {
-    "providers": []
+    "providers": ["password"]
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/backend/entities/User" },
+      "description": "Stores user profiles."
+    },
     "/urls/{urlId}": {
       "schema": { "$ref": "#/backend/entities/Url" },
-      "description": "Stores the URL mappings."
+      "description": "Stores the URL mappings. Can be created by anonymous or authenticated users."
     },
     "/counters/{counterId}": {
         "schema": { "$ref": "#/backend/entities/Counter" },

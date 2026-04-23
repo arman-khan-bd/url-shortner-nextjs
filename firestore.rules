@@ -2,12 +2,25 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Users can read and update their own profile.
+    // User creation happens in a server action after Firebase Auth success.
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null; 
+      allow delete: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
 
-    // URL mappings can be read by anyone, to allow for redirection.
-    // Writes are disallowed from the client. They happen via a trusted server action.
+    // URL mappings can be read by anyone for redirection.
+    // Creation can be done by anyone (anonymous).
+    // An authenticated user can create URLs and manage their own.
+    // An admin can manage any URL.
     match /urls/{shortCode} {
       allow read: if true;
-      allow write: if false; 
+      allow create: if true;
+      // Allow update/delete if user is owner or an admin.
+      // Clicks are updated via transaction, so we check for that specifically.
+      allow update: if (request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')) || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']));
+      allow delete: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
 
     // Counters should not be client-accessible at all.
