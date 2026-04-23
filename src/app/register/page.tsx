@@ -1,14 +1,22 @@
 'use client';
 import { RegisterForm } from '@/components/register-form';
 import { useUser } from '@/firebase';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function RegisterPage() {
   const { user, loading } = useUser();
+  const router = useRouter();
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
+  if (loading || user) {
     return (
       <div className="container flex-grow flex items-center justify-center p-4">
         <div className="w-full max-w-sm">
@@ -35,10 +43,6 @@ export default function RegisterPage() {
         </div>
       </div>
     );
-  }
-
-  if (user) {
-    redirect('/dashboard');
   }
 
   return (
