@@ -2,41 +2,43 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isOwner(urlId) {
-      return request.auth != null && request.auth.uid == get(/databases/$(database)/documents/urls/$(urlId)).data.userId;
-    }
-
-    function isClickIncrement() {
-      // This checks that the ONLY field being changed is 'clicks'.
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
-    }
-
+    
     match /users/{userId} {
-      // A user can create, read, and update their own profile.
+      // Only the authenticated user can read or write their own user document.
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     match /urls/{urlId} {
-      // Allow 'get' for public redirection.
-      // Allow 'list' only for the owner of the URLs.
-      allow read: if request.method == 'get' || isOwner(urlId);
+      function isOwner() {
+        // resource.data refers to the document's data before the request.
+        return request.auth.uid == resource.data.userId;
+      }
+
+      // Anyone can GET a single URL for redirection.
+      allow get: if true;
       
+      // A user can LIST their own URLs. 
+      // This rule requires the client query to use `where("userId", "==", uid)`.
+      // It implicitly checks that the query is filtering for the currently logged-in user.
+      allow list: if request.auth != null && request.auth.uid == request.query.where.value;
+
       // Anyone can create a URL.
       allow create: if true;
       
-      // Clicks can be incremented by anyone.
-      // Other properties can only be updated by the owner.
-      allow update: if isClickIncrement() || isOwner(urlId);
+      // An update is allowed if it's only incrementing clicks, OR if the user is the owner.
+      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks'])) || (request.auth != null && isOwner());
       
       // Only the owner can delete their own URL.
-      allow delete: if isOwner(urlId);
+      allow delete: if request.auth != null && isOwner();
     }
 
-    match /counters/{counterId} {
+    match /counters/url_counter {
+      // Anyone can read the counter (though it's not used by the client).
       allow read: if true;
-      allow create: if request.resource.data.count == 10000 && counterId == 'url_counter';
-      allow update: if request.resource.data.count == resource.data.count + 1 && counterId == 'url_counter';
+      // The counter can only be created with a specific value.
+      allow create: if request.resource.data.count == 10000;
+      // Updates must be atomic increments of 1.
+      allow update: if request.resource.data.count == resource.data.count + 1;
     }
   }
 }
