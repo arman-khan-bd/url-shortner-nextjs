@@ -19,7 +19,7 @@ export default function UrlsPage() {
         where('userId', '==', user.uid)
     ) : null, [db, user]);
     
-    const { data: urls, loading } = useCollection<Url>(urlsQuery);
+    const { data: urls, loading, error } = useCollection<Url>(urlsQuery);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
     const sortedUrls = useMemo(() => {
@@ -59,10 +59,17 @@ export default function UrlsPage() {
                     </TableCell>
                 </TableRow>
             )}
-            {!loading && sortedUrls.length === 0 && (
+            {error && (
+                <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center text-destructive">
+                        Error loading URLs: {error.message}
+                    </TableCell>
+                </TableRow>
+            )}
+            {!loading && !error && sortedUrls.length === 0 && (
                  <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
-                        You haven&apos;t created any URLs yet.
+                        You haven't created any URLs yet.
                     </TableCell>
                 </TableRow>
             )}

@@ -7,7 +7,6 @@ import {
   DocumentData,
   QuerySnapshot,
 } from 'firebase/firestore';
-import { Url } from '@/lib/types';
 
 // A type guard to check if a value is a Firestore Timestamp
 function isTimestamp(value: any): value is { toDate: () => Date } {
@@ -37,9 +36,11 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
             } as T;
           });
           setData(docs);
+          setError(null);
           setLoading(false);
         },
         (err) => {
+          console.error("useCollection Error:", err);
           setError(err);
           setLoading(false);
         }
@@ -50,7 +51,7 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
       setData(null);
       setLoading(false);
     }
-  }, [query]);
+  }, [JSON.stringify(query)]); // Serialize query to handle object changes
 
   return { data, loading, error };
 }

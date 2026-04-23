@@ -1,4 +1,3 @@
-
 'use client';
 import { BarChart, Briefcase, Link as LinkIcon, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +19,7 @@ export default function DashboardPage() {
         where('userId', '==', user.uid)
     ) : null, [db, user]);
     
-    const { data: urls, loading } = useCollection<Url>(urlsQuery);
+    const { data: urls, loading, error } = useCollection<Url>(urlsQuery);
     
     const sortedUrls = useMemo(() => {
         if (!urls) return [];
@@ -86,6 +85,20 @@ export default function DashboardPage() {
                                 <TableCell colSpan={4} className="h-12 text-center">Loading...</TableCell>
                              </TableRow>
                          ))}
+                         {error && (
+                            <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center text-destructive">
+                                    Error: {error.message}
+                                </TableCell>
+                            </TableRow>
+                        )}
+                        {!loading && !error && latestUrls.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center">
+                                    No URLs created yet.
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {latestUrls.map((url) => (
                             <TableRow key={url.shortCode}>
                                 <TableCell>

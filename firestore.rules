@@ -19,7 +19,6 @@ service cloud.firestore {
       
       // A user can LIST their own URLs. 
       // This rule requires the client query to use `where("userId", "==", uid)`.
-      // It implicitly checks that the query is filtering for the currently logged-in user.
       allow list: if request.auth != null && request.auth.uid == request.query.where.value;
 
       // Anyone can create a URL.
