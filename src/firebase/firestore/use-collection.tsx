@@ -27,7 +27,7 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
           const docs = snapshot.docs.map((doc) => {
             const docData = doc.data();
             // Convert Firestore Timestamps to JS Dates
-            if (isTimestamp(docData.createdAt)) {
+            if (docData.createdAt && isTimestamp(docData.createdAt)) {
               docData.createdAt = docData.createdAt.toDate();
             }
             return {
@@ -51,7 +51,7 @@ export function useCollection<T>(query: Query<DocumentData> | null) {
       setData(null);
       setLoading(false);
     }
-  }, [JSON.stringify(query)]); // Serialize query to handle object changes
+  }, [query]); // Depend directly on the query object
 
   return { data, loading, error };
 }
