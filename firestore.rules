@@ -3,25 +3,34 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isOwner(urlId) {
+      return request.auth != null && request.auth.uid == get(/databases/$(database)/documents/urls/$(urlId)).data.userId;
+    }
+
+    function isClickIncrement() {
+      // This checks that the ONLY field being changed is 'clicks'.
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']);
+    }
+
     match /users/{userId} {
       // A user can create, read, and update their own profile.
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     match /urls/{urlId} {
-      // Get is public for redirection. List is for owner only.
-      allow read: if request.method == 'get' || (request.auth != null && resource.data.userId == request.auth.uid);
+      // Allow 'get' for public redirection.
+      // Allow 'list' only for the owner of the URLs.
+      allow read: if request.method == 'get' || isOwner(urlId);
       
       // Anyone can create a URL.
       allow create: if true;
       
       // Clicks can be incremented by anyone.
       // Other properties can only be updated by the owner.
-      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks'])) ||
-                      (request.auth != null && resource.data.userId == request.auth.uid);
+      allow update: if isClickIncrement() || isOwner(urlId);
       
       // Only the owner can delete their own URL.
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if isOwner(urlId);
     }
 
     match /counters/{counterId} {

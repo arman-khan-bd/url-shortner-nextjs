@@ -29,20 +29,11 @@ export function UrlShortenerForm() {
 
   useEffect(() => {
     if (state.shortCode && state.longUrl) {
-        const newShortUrl = `${window.location.origin}/${state.shortCode}`;
-        setFullShortUrl(newShortUrl);
-        formRef.current?.reset();
-        
-        if (!user) {
-            const newUrl = { shortUrl: newShortUrl, longUrl: state.longUrl, shortCode: state.shortCode };
-            const storedUrls = JSON.parse(localStorage.getItem('anonymousUrls') || '[]');
-            // Add new url and prevent duplicates
-            const newUrls = [newUrl, ...storedUrls.filter((u: any) => u.shortCode !== newUrl.shortCode)].slice(0, 10);
-            localStorage.setItem('anonymousUrls', JSON.stringify(newUrls));
-            window.dispatchEvent(new Event('anonymousUrlsUpdated'));
-      }
+      const newShortUrl = `${window.location.origin}/${state.shortCode}`;
+      setFullShortUrl(newShortUrl);
+      formRef.current?.reset();
     }
-  }, [state.shortCode, state.longUrl, user]);
+  }, [state.shortCode, state.longUrl]);
 
   useEffect(() => {
     if (copied) {

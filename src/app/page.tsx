@@ -2,7 +2,6 @@
 import { UrlShortenerForm } from '@/components/url-shortener-form';
 import { useUser } from '@/firebase';
 import { redirect } from 'next/navigation';
-import { AnonymousUrlList } from '@/components/anonymous-url-list';
 
 export default function Home() {
   const { user, loading } = useUser();
@@ -23,9 +22,6 @@ export default function Home() {
     <main className="container flex-grow flex flex-col items-center p-4 gap-8 my-8">
       <div className="w-full max-w-2xl">
         <UrlShortenerForm />
-      </div>
-      <div className="w-full max-w-4xl">
-        <AnonymousUrlList />
       </div>
     </main>
   );
