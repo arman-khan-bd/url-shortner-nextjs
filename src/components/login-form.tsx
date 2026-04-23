@@ -51,7 +51,6 @@ export function LoginForm() {
       if (!userDoc.exists()) {
         await setDoc(userDocRef, {
           email: user.email,
-          role: 'user',
           createdAt: new Date(),
         });
       }

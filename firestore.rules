@@ -3,42 +3,25 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isAdmin() {
-      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
     match /users/{userId} {
-      // Create: Any authenticated user can create their own document.
-      allow create: if request.auth != null && request.auth.uid == userId;
-
-      // Get: A user can read their own profile. An admin can read any profile.
-      allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
-      
-      // Update: A user can update their own profile.
-      allow update: if request.auth != null && request.auth.uid == userId;
-      
-      // List/Delete: Only admins can list or delete users.
-      allow list, delete: if isAdmin();
+      // A user can create, read, and update their own profile.
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
     match /urls/{urlId} {
-      // Read: Users can list/get their own URLs. Admins can read all URLs.
-      // This is the primary rule for authenticated users viewing data in the dashboard.
-      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
-
-      // Get (public): Anyone can GET any URL for public redirection. This rule is
-      // combined with the `read` rule's `get` permission. If either is true, GET is allowed.
-      allow get: if true;
+      // Get is public for redirection. List is for owner only.
+      allow read: if request.method == 'get' || (request.auth != null && resource.data.userId == request.auth.uid);
       
-      // Create: Anyone can create a URL.
+      // Anyone can create a URL.
       allow create: if true;
       
-      // Update: Clicks can be incremented by anyone. Other updates only by owner/admin.
+      // Clicks can be incremented by anyone.
+      // Other properties can only be updated by the owner.
       allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks'])) ||
-                      (request.auth != null && (resource.data.userId == request.auth.uid || isAdmin()));
+                      (request.auth != null && resource.data.userId == request.auth.uid);
       
-      // Delete: Only the owner or an admin can delete.
-      allow delete: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      // Only the owner can delete their own URL.
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
     match /counters/{counterId} {

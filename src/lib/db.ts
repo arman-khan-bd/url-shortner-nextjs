@@ -71,7 +71,6 @@ export async function createUser(uid: string, email: string): Promise<void> {
     const userDoc = doc(usersCollection, uid);
     await setDoc(userDoc, {
         email,
-        role: 'user', // Default role
         createdAt: new Date(),
     });
 }

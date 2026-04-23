@@ -9,17 +9,12 @@
           "type": "string",
           "format": "email"
         },
-        "role": {
-          "type": "string",
-          "enum": ["user", "admin"],
-          "description": "The role of the user."
-        },
         "createdAt": {
           "type": "string",
           "format": "date-time"
         }
       },
-      "required": ["email", "role", "createdAt"]
+      "required": ["email", "createdAt"]
     },
     "Url": {
       "title": "URL Mapping",
