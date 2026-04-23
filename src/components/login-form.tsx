@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { login } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,12 @@ export function LoginForm() {
   const [state, formAction] = useActionState(login, null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (state?.success) {
+      router.push('/dashboard');
+    }
+  }, [state, router]);
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { register } from '@/app/actions';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -20,6 +21,13 @@ function SubmitButton() {
 
 export function RegisterForm() {
   const [state, formAction] = useActionState(register, null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state?.success) {
+      router.push('/dashboard');
+    }
+  }, [state, router]);
 
   return (
     <Card>

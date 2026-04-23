@@ -5,7 +5,6 @@ import { getNextId, saveUrlMapping, createUser as createUserInDb } from '@/lib/d
 import { toBase62 } from '@/lib/shortener';
 import { auth } from '@/firebase/config';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 
 export interface ShortenUrlState {
@@ -56,13 +55,13 @@ export async function login(prevState: any, formData: FormData) {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
+    return { success: true };
   } catch (error: any) {
     if (error.code === 'auth/invalid-credential') {
       return { message: 'Invalid email or password.' };
     }
     return { message: 'An unexpected error occurred. Please try again.' };
   }
-  redirect('/dashboard');
 }
 
 export async function register(prevState: any, formData: FormData) {
@@ -75,6 +74,7 @@ export async function register(prevState: any, formData: FormData) {
     if (user) {
       await createUserInDb(user.uid, email);
     }
+    return { success: true };
   } catch (error: any) {
     if (error.code === 'auth/email-already-in-use') {
       return { message: 'This email is already in use.' };
@@ -84,5 +84,4 @@ export async function register(prevState: any, formData: FormData) {
     }
     return { message: 'An unexpected error occurred. Please try again.' };
   }
-  redirect('/dashboard');
 }
