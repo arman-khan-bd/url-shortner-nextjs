@@ -2,12 +2,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useUser, useCollection } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { Url } from '@/lib/types';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, Trash2 } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 import { useState, useMemo } from 'react';
 
 export default function UrlsPage() {
@@ -16,12 +16,16 @@ export default function UrlsPage() {
 
     const urlsQuery = useMemo(() => (user && db) ? query(
         collection(db, 'urls'),
-        where('userId', '==', user.uid),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', user.uid)
     ) : null, [db, user]);
     
     const { data: urls, loading } = useCollection<Url>(urlsQuery);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+    const sortedUrls = useMemo(() => {
+        if (!urls) return [];
+        return [...urls].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }, [urls]);
 
     const handleCopy = (shortCode: string) => {
         const url = `${window.location.origin}/${shortCode}`;
@@ -55,14 +59,14 @@ export default function UrlsPage() {
                     </TableCell>
                 </TableRow>
             )}
-            {!loading && urls?.length === 0 && (
+            {!loading && sortedUrls.length === 0 && (
                  <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
                         You haven&apos;t created any URLs yet.
                     </TableCell>
                 </TableRow>
             )}
-            {urls?.map((url) => (
+            {sortedUrls.map((url) => (
               <TableRow key={url.shortCode}>
                 <TableCell>
                   <a href={`/${url.shortCode}`} target="_blank" className="text-primary hover:underline">{url.shortCode}</a>

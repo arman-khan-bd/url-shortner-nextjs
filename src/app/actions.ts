@@ -1,10 +1,8 @@
 'use server';
 
 import { z } from 'zod';
-import { getNextId, saveUrlMapping, createUser as createUserInDb, shortCodeExists } from '@/lib/db';
+import { getNextId, saveUrlMapping, shortCodeExists } from '@/lib/db';
 import { toBase62 } from '@/lib/shortener';
-import { auth } from '@/firebase/config';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { revalidatePath } from 'next/cache';
 
 export interface ShortenUrlState {
@@ -66,43 +64,5 @@ export async function shortenUrl(
   } catch (e: any) {
     console.error("Error shortening URL:", e);
     return { error: 'Failed to shorten URL. Please try again.' };
-  }
-}
-
-
-export async function login(prevState: any, formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    return { success: true };
-  } catch (error: any) {
-    if (error.code === 'auth/invalid-credential') {
-      return { message: 'Invalid email or password.' };
-    }
-    return { message: 'An unexpected error occurred. Please try again.' };
-  }
-}
-
-export async function register(prevState: any, formData: FormData) {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    if (user) {
-      await createUserInDb(user.uid, email);
-    }
-    return { success: true };
-  } catch (error: any) {
-    if (error.code === 'auth/email-already-in-use') {
-      return { message: 'This email is already in use.' };
-    }
-     if (error.code === 'auth/weak-password') {
-      return { message: 'Password should be at least 6 characters.' };
-    }
-    return { message: 'An unexpected error occurred. Please try again.' };
   }
 }

@@ -17,13 +17,17 @@ export default function DashboardPage() {
 
     const urlsQuery = useMemo(() => user ? query(
         collection(db, 'urls'),
-        where('userId', '==', user.uid),
-        orderBy('createdAt', 'desc')
+        where('userId', '==', user.uid)
     ) : null, [db, user]);
     
     const { data: urls, loading } = useCollection<Url>(urlsQuery);
+    
+    const sortedUrls = useMemo(() => {
+        if (!urls) return [];
+        return [...urls].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }, [urls]);
 
-    const latestUrls = urls?.slice(0, 5) || [];
+    const latestUrls = sortedUrls.slice(0, 5);
 
     const totalUrls = urls?.length || 0;
     const totalClicks = urls?.reduce((sum, url) => sum + (url.clicks || 0), 0) || 0;
