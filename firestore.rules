@@ -29,8 +29,8 @@ service cloud.firestore {
       // Clicks are updated via transaction, so we check for that specifically.
       allow update: if (request.auth != null && (resource.data.userId == request.auth.uid || isAdmin())) || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']));
       allow delete: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
-      // Admins can list all urls.
-      allow list: if isAdmin();
+      // Admins can list all urls. Authenticated users can also list (the client-side query filters to their own).
+      allow list: if isAdmin() || request.auth != null;
     }
 
     // Allow clients to increment the counter.

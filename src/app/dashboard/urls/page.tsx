@@ -14,7 +14,7 @@ export default function UrlsPage() {
     const { user } = useUser();
     const db = useFirestore();
 
-    const urlsQuery = useMemo(() => user ? query(
+    const urlsQuery = useMemo(() => (user && db) ? query(
         collection(db, 'urls'),
         where('userId', '==', user.uid),
         orderBy('createdAt', 'desc')
