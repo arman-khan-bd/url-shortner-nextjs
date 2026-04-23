@@ -9,26 +9,23 @@ service cloud.firestore {
     }
 
     match /urls/{urlId} {
-      function isOwner() {
-        // resource.data refers to the document's data before the request.
-        return request.auth.uid == resource.data.userId;
-      }
-
-      // Anyone can GET a single URL for redirection.
+      // `get` is for reading a single document. Anyone can do this for redirection.
       allow get: if true;
       
-      // A user can LIST their own URLs. 
-      // This rule requires the client query to use `where("userId", "==", uid)`.
-      allow list: if request.auth != null && request.auth.uid == request.query.where.value;
-
-      // Anyone can create a URL.
-      allow create: if true;
+      // `list` is for querying a collection. Only an authenticated user can list their own URLs.
+      // This rule requires the client-side query to include `where("userId", "==", request.auth.uid)`.
+      allow list: if request.auth != null && request.query.userId == request.auth.uid;
       
-      // An update is allowed if it's only incrementing clicks, OR if the user is the owner.
-      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks'])) || (request.auth != null && isOwner());
+      // Allow creation of a URL. If a userId is included, it must match the creator's ID.
+      allow create: if (request.auth != null && request.resource.data.userId == request.auth.uid) || (request.resource.data.userId == null);
+      
+      // An update is allowed if it's only incrementing clicks for redirection,
+      // OR if the authenticated user is the owner.
+      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']) && request.resource.data.clicks == resource.data.clicks + 1)
+                    || (request.auth != null && resource.data.userId == request.auth.uid);
       
       // Only the owner can delete their own URL.
-      allow delete: if request.auth != null && isOwner();
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
 
     match /counters/url_counter {
