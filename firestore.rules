@@ -9,12 +9,10 @@ service cloud.firestore {
     }
 
     match /urls/{urlId} {
-      // `get` is for reading a single document. Anyone can do this for redirection.
-      allow get: if true;
-      
-      // `list` is for querying a collection. Only an authenticated user can list their own URLs.
-      // This rule requires the client-side query to include `where("userId", "==", request.auth.uid)`.
-      allow list: if request.auth != null && request.query.userId == request.auth.uid;
+      // A read is allowed in two cases:
+      // 1. For redirection: A single document is being read (`get`). This is for the `/[shortCode]` page.
+      // 2. For dashboard lists: The user is authenticated and is the owner of the URL. The client query MUST include `where("userId", "==", request.auth.uid)`.
+      allow read: if (request.method == 'get') || (request.auth != null && request.auth.uid == resource.data.userId);
       
       // Allow creation of a URL. If a userId is included, it must match the creator's ID.
       allow create: if (request.auth != null && request.resource.data.userId == request.auth.uid) || (request.resource.data.userId == null);
