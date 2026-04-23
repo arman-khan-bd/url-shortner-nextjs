@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth, db } from '@/firebase/config';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -35,6 +36,7 @@ function GoogleIcon() {
 export function LoginForm() {
   const [state, formAction] = useActionState(login, null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const router = useRouter();
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
@@ -53,7 +55,7 @@ export function LoginForm() {
           createdAt: new Date(),
         });
       }
-      // Redirection is handled by hooks that respond to auth state changes
+      router.push('/dashboard');
     } catch (error) {
       console.error("Google Sign-In Error:", error);
       // You could set an error state here to show a message to the user
