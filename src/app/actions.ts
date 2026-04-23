@@ -36,12 +36,10 @@ export async function shortenUrl(
     
     await saveUrlMapping(validation.data, shortCode, userId || null);
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 9002}`;
     if (userId) {
         revalidatePath('/dashboard/urls');
     }
     return {
-        shortUrl: `${baseUrl}/${shortCode}`,
         longUrl: validation.data,
         shortCode: shortCode
     };

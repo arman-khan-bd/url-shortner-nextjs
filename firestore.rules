@@ -7,35 +7,41 @@ service cloud.firestore {
       return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Users can read and update their own profile.
-    // User creation happens in a server action after Firebase Auth success.
     match /users/{userId} {
-      allow create: if request.auth != null;
+      // Create: Any authenticated user can create their own document.
+      allow create: if request.auth != null && request.auth.uid == userId;
+
+      // Get: A user can read their own profile. An admin can read any profile.
+      allow get: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      
+      // Update: A user can update their own profile.
       allow update: if request.auth != null && request.auth.uid == userId;
-      // Read: Admins can read any profile, users can read their own.
-      allow read: if isAdmin() || (request.auth != null && request.auth.uid == userId);
-      // List/Delete: Only admins
+      
+      // List/Delete: Only admins can list or delete users.
       allow list, delete: if isAdmin();
     }
 
-    // URL mappings can be read by anyone for redirection.
-    // Creation can be done by anyone (anonymous).
-    // An authenticated user can create URLs and manage their own.
-    // An admin can manage any URL.
-    match /urls/{shortCode} {
-      // Get is public for redirection
+    match /urls/{urlId} {
+      // Get: Anyone can read any URL for redirection.
       allow get: if true;
-      // List is for admins or authenticated users
-      allow list: if isAdmin() || request.auth != null;
-      
+
+      // List: Admins can list all URLs. Users can query for their own URLs.
+      // This rule allows any authenticated user to perform list queries.
+      // The queries themselves must be secured on the client-side to only ask for that user's documents.
+      // The 'get' rule being 'true' ensures that once the query is allowed, the documents can be read.
+      allow list: if request.auth != null;
+
+      // Create: Anyone can create a URL.
       allow create: if true;
-      // Allow update/delete if user is owner or an admin.
-      // Clicks are updated via transaction, so we check for that specifically.
-      allow update: if (request.auth != null && (resource.data.userId == request.auth.uid || isAdmin())) || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks']));
+      
+      // Update: Clicks can be incremented by anyone. Other updates only by owner/admin.
+      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clicks'])) ||
+                      (request.auth != null && (resource.data.userId == request.auth.uid || isAdmin()));
+      
+      // Delete: Only the owner or an admin can delete.
       allow delete: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // Allow clients to increment the counter.
     match /counters/{counterId} {
       allow read: if true;
       allow create: if request.resource.data.count == 10000 && counterId == 'url_counter';

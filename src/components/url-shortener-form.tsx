@@ -25,20 +25,24 @@ export function UrlShortenerForm() {
   const [state, formAction] = useActionState(shortenUrl, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [copied, setCopied] = useState(false);
+  const [fullShortUrl, setFullShortUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (state.shortUrl && state.longUrl && state.shortCode) {
-      formRef.current?.reset();
-      if (!user) {
-        const newUrl = { shortUrl: state.shortUrl, longUrl: state.longUrl, shortCode: state.shortCode };
-        const storedUrls = JSON.parse(localStorage.getItem('anonymousUrls') || '[]');
-        // Add new url and prevent duplicates
-        const newUrls = [newUrl, ...storedUrls.filter((u: any) => u.shortCode !== newUrl.shortCode)].slice(0, 10);
-        localStorage.setItem('anonymousUrls', JSON.stringify(newUrls));
-        window.dispatchEvent(new Event('anonymousUrlsUpdated'));
+    if (state.shortCode && state.longUrl) {
+        const newShortUrl = `${window.location.origin}/${state.shortCode}`;
+        setFullShortUrl(newShortUrl);
+        formRef.current?.reset();
+        
+        if (!user) {
+            const newUrl = { shortUrl: newShortUrl, longUrl: state.longUrl, shortCode: state.shortCode };
+            const storedUrls = JSON.parse(localStorage.getItem('anonymousUrls') || '[]');
+            // Add new url and prevent duplicates
+            const newUrls = [newUrl, ...storedUrls.filter((u: any) => u.shortCode !== newUrl.shortCode)].slice(0, 10);
+            localStorage.setItem('anonymousUrls', JSON.stringify(newUrls));
+            window.dispatchEvent(new Event('anonymousUrlsUpdated'));
       }
     }
-  }, [state.shortUrl, state.longUrl, state.shortCode, user]);
+  }, [state.shortCode, state.longUrl, user]);
 
   useEffect(() => {
     if (copied) {
@@ -48,8 +52,8 @@ export function UrlShortenerForm() {
   }, [copied]);
 
   const handleCopy = () => {
-    if (state.shortUrl) {
-      navigator.clipboard.writeText(state.shortUrl);
+    if (fullShortUrl) {
+      navigator.clipboard.writeText(fullShortUrl);
       setCopied(true);
     }
   };
@@ -91,7 +95,7 @@ export function UrlShortenerForm() {
         </form>
       </Card>
 
-      {state.shortUrl && (
+      {fullShortUrl && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Card>
                 <CardHeader>
@@ -100,12 +104,12 @@ export function UrlShortenerForm() {
                 <CardContent>
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-lg bg-muted p-4">
                         <a 
-                            href={state.shortUrl} 
+                            href={fullShortUrl} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-primary font-medium hover:underline truncate"
                         >
-                            {state.shortUrl}
+                            {fullShortUrl}
                         </a>
                         <Button variant="ghost" size="icon" onClick={handleCopy}>
                             {copied ? <Check className="h-5 w-5 text-green-500" /> : <Copy className="h-5 w-5" />}
