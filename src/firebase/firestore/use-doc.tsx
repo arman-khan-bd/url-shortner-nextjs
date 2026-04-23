@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import {
   onSnapshot,
   DocumentReference,
@@ -13,12 +13,11 @@ export function useDoc<T>(ref: DocumentReference<DocumentData> | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const refRef = useRef(ref);
-
   useEffect(() => {
-    if (refRef.current) {
+    if (ref) {
+      setLoading(true);
       const unsubscribe = onSnapshot(
-        refRef.current,
+        ref,
         (snapshot: DocumentSnapshot) => {
           if (snapshot.exists()) {
             setData({ id: snapshot.id, ...snapshot.data() } as T);
@@ -34,8 +33,11 @@ export function useDoc<T>(ref: DocumentReference<DocumentData> | null) {
       );
 
       return () => unsubscribe();
+    } else {
+      setData(null);
+      setLoading(false);
     }
-  }, [refRef]);
+  }, [ref]);
 
   return { data, loading, error };
 }

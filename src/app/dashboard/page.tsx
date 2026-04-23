@@ -9,16 +9,17 @@ import { useFirestore } from '@/firebase';
 import { Url } from '@/lib/types';
 import { format } from 'date-fns';
 import { UrlShortenerForm } from '@/components/url-shortener-form';
+import { useMemo } from 'react';
 
 export default function DashboardPage() {
     const { user } = useUser();
     const db = useFirestore();
 
-    const urlsQuery = user ? query(
+    const urlsQuery = useMemo(() => user ? query(
         collection(db, 'urls'),
         where('userId', '==', user.uid),
         orderBy('createdAt', 'desc')
-    ) : null;
+    ) : null, [db, user]);
     
     const { data: urls, loading } = useCollection<Url>(urlsQuery);
 
@@ -87,7 +88,7 @@ export default function DashboardPage() {
                                     <a href={`/${url.shortCode}`} target="_blank" className="text-primary hover:underline">{url.shortCode}</a>
                                 </TableCell>
                                 <TableCell className="hidden sm:table-cell max-w-xs truncate">{url.longUrl}</TableCell>
-                                <TableCell className="hidden sm:table-cell">{format(url.createdAt.toDate(), 'MMM d, yyyy')}</TableCell>
+                                <TableCell className="hidden sm:table-cell">{format(new Date(url.createdAt as any), 'MMM d, yyyy')}</TableCell>
                                 <TableCell className="text-right">{url.clicks}</TableCell>
                             </TableRow>
                         ))}

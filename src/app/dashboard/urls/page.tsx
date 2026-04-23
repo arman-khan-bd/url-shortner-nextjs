@@ -8,17 +8,17 @@ import { Url } from '@/lib/types';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Copy, Check, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 export default function UrlsPage() {
     const { user } = useUser();
     const db = useFirestore();
 
-    const urlsQuery = user ? query(
+    const urlsQuery = useMemo(() => user ? query(
         collection(db, 'urls'),
         where('userId', '==', user.uid),
         orderBy('createdAt', 'desc')
-    ) : null;
+    ) : null, [db, user]);
     
     const { data: urls, loading } = useCollection<Url>(urlsQuery);
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -68,7 +68,7 @@ export default function UrlsPage() {
                   <a href={`/${url.shortCode}`} target="_blank" className="text-primary hover:underline">{url.shortCode}</a>
                 </TableCell>
                 <TableCell className="max-w-xs truncate">{url.longUrl}</TableCell>
-                <TableCell>{format(url.createdAt.toDate(), 'MMM d, yyyy')}</TableCell>
+                <TableCell>{format(new Date(url.createdAt as any), 'MMM d, yyyy')}</TableCell>
                 <TableCell className="text-right">{url.clicks}</TableCell>
                 <TableCell className="text-right">
                     <Button variant="ghost" size="icon" onClick={() => handleCopy(url.shortCode)}>
