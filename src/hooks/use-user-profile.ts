@@ -21,7 +21,7 @@ export function useUserProfile() {
 
   const { data: userProfile, loading: profileLoading, error } = useDoc<UserProfile>(userDocRef);
   
-  const loading = userLoading || profileLoading;
+  const loading = userLoading || (!!user && profileLoading);
 
   return { user, userProfile, loading, error };
 }
