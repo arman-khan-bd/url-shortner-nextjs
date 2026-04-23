@@ -6,8 +6,10 @@ import { shortenUrl, type ShortenUrlState } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Copy, Link as LinkIcon, Check } from 'lucide-react';
+import { ArrowRight, Copy, Link as LinkIcon, Check, Settings2 } from 'lucide-react';
 import { useUser } from '@/firebase';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Label } from '@/components/ui/label';
 
 const initialState: ShortenUrlState = {};
 
@@ -26,14 +28,24 @@ export function UrlShortenerForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [copied, setCopied] = useState(false);
   const [fullShortUrl, setFullShortUrl] = useState<string | null>(null);
+  const [origin, setOrigin] = useState('');
 
   useEffect(() => {
-    if (state.shortCode && state.longUrl) {
-      const newShortUrl = `${window.location.origin}/${state.shortCode}`;
+    if (typeof window !== 'undefined') {
+        setOrigin(window.location.origin);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (state.shortCode && state.longUrl && !state.error) {
+      const newShortUrl = `${origin}/${state.shortCode}`;
       setFullShortUrl(newShortUrl);
       formRef.current?.reset();
     }
-  }, [state.shortCode, state.longUrl]);
+    if (state.error) {
+      setFullShortUrl(null);
+    }
+  }, [state, origin]);
 
   useEffect(() => {
     if (copied) {
@@ -67,7 +79,7 @@ export function UrlShortenerForm() {
         </CardHeader>
         <form action={formAction} ref={formRef}>
           <input type="hidden" name="userId" value={user?.uid || ''} />
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row items-center gap-2 relative">
               <Input
                 type="url"
@@ -79,6 +91,29 @@ export function UrlShortenerForm() {
               />
               <SubmitButton />
             </div>
+
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                  <Button variant="link" className="p-0 h-auto text-sm font-normal text-muted-foreground">
+                      <Settings2 className="h-4 w-4 mr-1"/>
+                      Advanced options
+                  </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-2 pt-4 animate-in fade-in-0 zoom-in-95">
+                  <Label htmlFor="customShortCode">Custom alias (optional)</Label>
+                  <div className="flex items-center">
+                      <span className="text-sm text-muted-foreground bg-muted h-10 px-3 flex items-center rounded-l-md border border-r-0">
+                          {origin}/
+                      </span>
+                      <Input
+                          id="customShortCode"
+                          name="customShortCode"
+                          placeholder="my-cool-link"
+                          className="rounded-l-none"
+                      />
+                  </div>
+              </CollapsibleContent>
+            </Collapsible>
             {state.error && (
               <p className="mt-2 text-sm text-destructive">{state.error}</p>
             )}
