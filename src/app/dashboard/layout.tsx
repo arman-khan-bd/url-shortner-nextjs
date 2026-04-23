@@ -1,12 +1,12 @@
 'use client';
 import { redirect } from 'next/navigation';
 import { useUser } from '@/firebase';
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarInset } from '@/components/ui/sidebar';
 import { DashboardNav } from '@/components/dashboard-nav';
-import { UserNav } from '@/components/user-nav';
 import { Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Navbar } from '@/components/navbar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUser();
@@ -39,13 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <SidebarTrigger className="sm:hidden" />
-          <div className="flex-1">
-             <h1 className="font-semibold text-lg">Dashboard</h1>
-          </div>
-          <UserNav />
-        </header>
+        <Navbar />
         <main className="p-4 sm:px-6 sm:py-0 space-y-4">
             {children}
         </main>
