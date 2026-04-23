@@ -22,15 +22,14 @@ service cloud.firestore {
     }
 
     match /urls/{urlId} {
-      // Get: Anyone can read any URL for redirection.
+      // Read: Users can list/get their own URLs. Admins can read all URLs.
+      // This is the primary rule for authenticated users viewing data in the dashboard.
+      allow read: if (request.auth != null && resource.data.userId == request.auth.uid) || isAdmin();
+
+      // Get (public): Anyone can GET any URL for public redirection. This rule is
+      // combined with the `read` rule's `get` permission. If either is true, GET is allowed.
       allow get: if true;
-
-      // List: Admins can list all URLs. Users can query for their own URLs.
-      // This rule allows any authenticated user to perform list queries.
-      // The queries themselves must be secured on the client-side to only ask for that user's documents.
-      // The 'get' rule being 'true' ensures that once the query is allowed, the documents can be read.
-      allow list: if request.auth != null;
-
+      
       // Create: Anyone can create a URL.
       allow create: if true;
       
