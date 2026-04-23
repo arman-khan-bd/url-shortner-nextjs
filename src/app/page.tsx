@@ -8,8 +8,8 @@ export default function Home() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
-        {/* You can add a loading spinner here */}
+      <main className="container flex-grow flex items-center justify-center">
+        <div className="h-8 w-24 animate-pulse rounded-md bg-muted" />
       </main>
     );
   }
@@ -19,7 +19,7 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
+    <main className="container flex-grow flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <UrlShortenerForm />
       </div>

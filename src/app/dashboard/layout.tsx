@@ -6,12 +6,17 @@ import { DashboardNav } from '@/components/dashboard-nav';
 import { UserNav } from '@/components/user-nav';
 import { Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUser();
 
   if (loading) {
-    return <div>Loading...</div>; // Or a proper loading skeleton
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <Skeleton className="h-12 w-12 rounded-full" />
+        </div>
+    )
   }
 
   if (!user) {

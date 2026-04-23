@@ -1,8 +1,7 @@
-
 'use client';
 
-import { useFormStatus } from 'react-dom';
-import { useEffect, useRef, useState, useActionState } from 'react';
+import { useFormStatus, useActionState } from 'react-dom';
+import { useEffect, useRef, useState } from 'react';
 import { shortenUrl, type ShortenUrlState } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,7 +55,7 @@ export function UrlShortenerForm() {
                     <LinkIcon className="w-8 h-8 text-primary" />
                 </div>
                 <div>
-                    <CardTitle className="text-3xl font-headline">LinkSwift</CardTitle>
+                    <CardTitle className="text-3xl font-headline">UrlHum</CardTitle>
                     <CardDescription className="mt-1">
                         Enter a long URL to make it short and sweet.
                     </CardDescription>

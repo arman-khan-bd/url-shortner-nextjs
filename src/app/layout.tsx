@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { MainLayout } from '@/components/main-layout';
 
 export const metadata: Metadata = {
-  title: 'LinkSwift - Swift & Simple URL Shortener',
-  description: 'Convert long URLs into concise, unique short codes with LinkSwift.',
+  title: 'UrlHum - Swift & Simple URL Shortener',
+  description: 'Convert long URLs into concise, unique short codes with UrlHum.',
 };
 
 export default function RootLayout({
@@ -14,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -22,7 +23,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <FirebaseClientProvider>
-          {children}
+          <MainLayout>
+            {children}
+          </MainLayout>
         </FirebaseClientProvider>
         <Toaster />
       </body>
