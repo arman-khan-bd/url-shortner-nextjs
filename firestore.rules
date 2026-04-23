@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // URL mappings can be read by anyone, to allow for redirection.
+    // Writes are disallowed from the client. They happen via a trusted server action.
+    match /urls/{shortCode} {
+      allow read: if true;
+      allow write: if false; 
+    }
+
+    // Counters should not be client-accessible at all.
+    match /counters/{counterId} {
+      allow read, write: if false;
+    }
+  }
+}

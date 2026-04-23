@@ -36,7 +36,8 @@ export async function shortenUrl(
         shortUrl: `${baseUrl}/${shortCode}`,
         longUrl: validation.data
     };
-  } catch (e) {
+  } catch (e: any) {
+    console.error("Error shortening URL:", e);
     return { error: 'Failed to shorten URL. Please try again.' };
   }
 }

@@ -1,0 +1,50 @@
+{
+  "entities": {
+    "Url": {
+      "title": "URL Mapping",
+      "description": "Represents a shortened URL.",
+      "type": "object",
+      "properties": {
+        "longUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "shortCode": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "clicks": {
+          "type": "number"
+        }
+      },
+      "required": ["longUrl", "shortCode", "createdAt", "clicks"]
+    },
+    "Counter": {
+        "title": "Counter",
+        "description": "A global counter.",
+        "type": "object",
+        "properties": {
+            "count": {
+                "type": "number"
+            }
+        },
+        "required": ["count"]
+    }
+  },
+  "auth": {
+    "providers": []
+  },
+  "firestore": {
+    "/urls/{urlId}": {
+      "schema": { "$ref": "#/backend/entities/Url" },
+      "description": "Stores the URL mappings."
+    },
+    "/counters/{counterId}": {
+        "schema": { "$ref": "#/backend/entities/Counter" },
+        "description": "Stores global counters."
+    }
+  }
+}
